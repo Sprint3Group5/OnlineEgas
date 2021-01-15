@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,6 +30,7 @@ import com.egas.dealer.exception.InputException;
 import com.egas.dealer.exception.NotFoundException;
 import com.egas.dealer.service.IDealerServiceImpl;
 
+@CrossOrigin(origins="http://localhost:3000")
 @RestController
 @RequestMapping(value = "/dealers")
 public class DealerController {
@@ -65,9 +67,10 @@ public class DealerController {
      
 	@PostMapping(value="/login")
 	public ResponseEntity<String> dealerLogin(@RequestBody Map<String,String> loginData) {
-	
+		System.out.println(loginData);
 		pancardNumberLogin =dealerService.dealerLogin(loginData);
-		return new ResponseEntity<String>("...Login Successful...Welcome Delaer to Egas Application",HttpStatus.OK);
+		System.out.println(pancardNumberLogin);
+		return new ResponseEntity<String>("Login Successfull",HttpStatus.OK);
 	}
 
 	
@@ -103,11 +106,24 @@ public class DealerController {
 		return new ResponseEntity<List<CustomerNewConnection>>(customerConnection,HttpStatus.OK);
 		}
 	} 
-
+ 
+	@GetMapping(value="/viewPendingConnections")
+	public ResponseEntity<List<CustomerNewConnection>> viewPendingConections()
+	{
+		if(pancardNumberLogin==null)
+		{
+			throw new NotFoundException("Dear Dealer Please Login First!");
+		}
+		else
+		{
+		List<CustomerNewConnection> customerConnection=dealerService.getPendingConnections();
+		return new ResponseEntity<List<CustomerNewConnection>>(customerConnection,HttpStatus.OK);
+		}
+	} 
 	@PatchMapping(value = "/changeConnectionStatus")
 	public ResponseEntity<String> changeConnectionStatus(@RequestBody Map<String,String> updateStatus)
 	{
-		
+		System.out.println(updateStatus);
 		CustomerNewConnection data=dealerService.saveConnectionStatus(updateStatus);
 		if(data!=null)
 		{
