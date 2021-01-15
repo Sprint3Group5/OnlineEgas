@@ -1,5 +1,6 @@
 package com.egas.dealer.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -121,6 +122,7 @@ public class IDealerServiceImpl  implements IDealerService{
 		pancardNumberLogin=loginData.get("pancardNumber");
 		String password = loginData.get("password");
 		Dealer dealer1=dealerRepository.findByPancardNumber(pancardNumberLogin);
+		//System.out.println(dealer1);
 		Boolean dealer_found = false;
 		if(dealer1==null)
 		{
@@ -172,9 +174,37 @@ public class IDealerServiceImpl  implements IDealerService{
 	public List<CustomerNewConnection> getAllCustomerConnections()
 	{
 		Dealer dealer=dealerRepository.findByPancardNumber(pancardNumberLogin);
+		System.out.println(pancardNumberLogin);
 		String city=dealer.getCity();
 		List<CustomerNewConnection> customerCon=(List<CustomerNewConnection>)customerRepository.findAllByCustCity(city);
-		return customerCon;
+		List<CustomerNewConnection> customer=new ArrayList<>();
+		//List<Dealer> dealer = (List<Dealer>) dealerRepository.findAll();
+        for (CustomerNewConnection temp : customerCon) {
+
+			if(temp.getCustConnectionStatus().equals("Approved"))
+			{
+			    customer.add(temp);
+			}	
+        }
+		return customer;
+	}
+	
+	public List<CustomerNewConnection> getPendingConnections()
+	{
+		Dealer dealer=dealerRepository.findByPancardNumber(pancardNumberLogin);
+		System.out.println(pancardNumberLogin);
+		String city=dealer.getCity();
+		List<CustomerNewConnection> customerCon=(List<CustomerNewConnection>)customerRepository.findAllByCustCity(city);
+		List<CustomerNewConnection> customer=new ArrayList<>();
+		//List<Dealer> dealer = (List<Dealer>) dealerRepository.findAll();
+        for (CustomerNewConnection temp : customerCon) {
+
+			if(temp.getCustConnectionStatus().equals("Pending"))
+			{
+			    customer.add(temp);
+			}	
+        }
+		return customer;
 	}
 	
 	//*********Customer Gas Booking Methods***********
