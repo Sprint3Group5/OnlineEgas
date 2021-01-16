@@ -21,7 +21,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.egas.dealer.entity.CustomerAccessoriesBooking;
 import com.egas.dealer.entity.CustomerGasBooking;
+import com.egas.dealer.entity.CustomerNewConnection;
 import com.egas.dealer.entity.Staff_Member;
+import com.egas.dealer.exception.NotFoundException;
+import com.egas.dealer.repository.StaffMemberRepository;
 import com.egas.dealer.service.StaffMemberServiceImpl;
 
 
@@ -30,8 +33,11 @@ import com.egas.dealer.service.StaffMemberServiceImpl;
 @RequestMapping(value="/staffmembers")
 public class StaffMemberController {
 
+	
 	@Autowired
 	private StaffMemberServiceImpl staffMemberService;
+	
+	public String pancardNumberLogin;
 	
 	@GetMapping(value="/getAllStaffMembers")
 	public ResponseEntity<List<Staff_Member>> getStaffMembers()
@@ -48,72 +54,98 @@ public class StaffMemberController {
 		return new ResponseEntity<String>(" StaffMember with Id: " + staffId + " create Successfully ",HttpStatus.OK);
     }
 	
-	@PutMapping(value = "/updateStaffMember")
-	public Staff_Member updateStaffMember(@RequestBody Map<String,String> updateData)
+	@PatchMapping(value = "/updateStaffMember")
+	public Staff_Member updateStaffMember(@RequestBody Staff_Member updateData)
 	{
 		Staff_Member staff=staffMemberService.updateStaffMember(updateData);
 		return staff;
 	}
 	
-	@PostMapping(value="/staffMemberLogin/login")
-	public ResponseEntity<String> loginStaffMember(@RequestBody Staff_Member staffMember)
-	{
-		if(staffMemberService.staffMemberLogin(staffMember.getPancardNumber(), staffMember.getPassword()))
-		{
-			return new ResponseEntity<String>("Login Successful... :)",HttpStatus.OK);
-		}
-		else
-		{
-			return new ResponseEntity<String>("Invalid PancardNumber or Password.......If you are a new user first register yourself.... :)",HttpStatus.BAD_REQUEST);
-		}
-	}
+	@Autowired
+	private StaffMemberRepository staffRepository;
 	
+	@GetMapping(value="/stafflogin/{pancard}/{pass}")
+	public ResponseEntity<String> staffLogin(@PathVariable String pancard, @PathVariable String pass)
+	{
+		pancardNumberLogin = staffMemberService.staffLogin(pancard, pass);
+		System.out.println(pancardNumberLogin);
+		return new ResponseEntity<String>("Login Successful",HttpStatus.OK);
+	}
 	@GetMapping(value = "/getCustomerGasBooking")
 	public ResponseEntity<List<CustomerGasBooking>> viewCustGasBooking()
 	{
+		if(pancardNumberLogin==null)
+		{
+			throw new NotFoundException("Dear StaffDelivery Please Login First!");
+		}
+		else {
 		List<CustomerGasBooking> customerGasBooking=staffMemberService.getAllCustomerGasBooking();
 		return new ResponseEntity<List<CustomerGasBooking>>(customerGasBooking,HttpStatus.OK);
 	}
-	
-	
-	 @RequestMapping(value = "/custCity/{custCity}") 
-	 public ResponseEntity<List<CustomerGasBooking>> findByCity(@PathVariable(value = "custCity") String custCity) 
-	 {
-	      List<CustomerGasBooking> gasBooking = staffMemberService.findByCustCity(custCity);
-	      return new ResponseEntity<List<CustomerGasBooking>>(gasBooking, HttpStatus.OK);
-	  
-	 }
+	}
 	 
 	 @PatchMapping(value = "/updateGasDeliveryStatus")
 	 public ResponseEntity<String> updateGasDeliveryStatusBasedOnId(@RequestBody Map<String,String> updateStatus)
 	 {
 		CustomerGasBooking customerGas=staffMemberService.updateGasDeliveryStatus(updateStatus);
+		if(customerGas != null)
+		{
 		String status=updateStatus.get("custGasDeliveryStatus");
 		Integer custId=customerGas.getCustGasBookingId();
 	    return new ResponseEntity<String>("Customer Status with Id: " + custId + " updated to status: " + status + " Successfully ",HttpStatus.OK);
+	 }else {
+		 throw new NotFoundException("Pancard Number Not Found:(");
 	 }
+	 }
+	 @GetMapping(value="/viewPendingGasBooking")
+		public ResponseEntity<List<CustomerGasBooking>> viewPendingGasBooking()
+		{
+			if(pancardNumberLogin==null)
+			{
+				throw new NotFoundException("Dear StaffDelivery Please Login First!");
+			}
+			else
+			{
+			List<CustomerGasBooking> customerGas=staffMemberService.getPendingGasBooking();
+			return new ResponseEntity<List<CustomerGasBooking>>(customerGas,HttpStatus.OK);
+			}
+		} 
 	 
 	 @GetMapping(value = "/getCustomerAccessoriesBooking")
 	 public ResponseEntity<List<CustomerAccessoriesBooking>>  viewCustAccessoriesBooking()
 	 {
+		 if(pancardNumberLogin==null)
+			{
+				throw new NotFoundException("Dear StaffDelivery Please Login First!");
+			}
 		 List<CustomerAccessoriesBooking> customerAccessoriesBooking =staffMemberService.getAllCustomerAccessoriesBooking();
 		 return new ResponseEntity<List<CustomerAccessoriesBooking>>(customerAccessoriesBooking,HttpStatus.OK);
 	 }
+	 @GetMapping(value="/viewPendingAccessoriesBooking")
+		public ResponseEntity<List<CustomerAccessoriesBooking>> viewPendingAccessoriesBooking()
+		{
+			if(pancardNumberLogin==null)
+			{
+				throw new NotFoundException("Dear StaffDelivery Please Login First!");
+			}
+			else
+			{
+			List<CustomerAccessoriesBooking> customerAccessories=staffMemberService.getPendingAccessoriesBooking();
+			return new ResponseEntity<List<CustomerAccessoriesBooking>>(customerAccessories,HttpStatus.OK);
+			}
+		} 
 	 
-	 @RequestMapping(value = "/custBookingCity/{custBookingCity}")
-	 public ResponseEntity<List<CustomerAccessoriesBooking>> findByCity1(@PathVariable(value = "custBookingCity") String custBookingCity)
-	 {
-		 List<CustomerAccessoriesBooking> accessoriesBooking = staffMemberService.findByCustBookingCity(custBookingCity);
-		 return new ResponseEntity<List<CustomerAccessoriesBooking>>(accessoriesBooking,HttpStatus.OK);
-	 }
 	 
 	 @PatchMapping(value= "updateAccessoriesDeliveryStatus")
 	 public ResponseEntity<String> updateAccessDeliveryStatusBasedOnId(@RequestBody Map<String,String> updateStatus)
 	 {
 		 CustomerAccessoriesBooking customerAccessories=staffMemberService.updateAccessoriesDeliveryStatus(updateStatus);
-		 String status=updateStatus.get("custAccessoriesDeliveryStatus");
-		 Integer custId=customerAccessories.getCustomerId();
-		 return new ResponseEntity<String>("Customer Status with Id: " + custId + " updated to status: " + status + " Successfully ",HttpStatus.OK);
+		 if(customerAccessories != null) {
+			 String status=updateStatus.get("custAccessoriesDeliveryStatus");
+			 Integer custId=customerAccessories.getCustomerId();
+			 return new ResponseEntity<String>("Customer Status with Id: " + custId + " updated to status: " + status + " Successfully ",HttpStatus.OK);
+		 }else {
+			 throw new NotFoundException("Pancard Number not found:(");
+		 }
 	 }
-	 
 }

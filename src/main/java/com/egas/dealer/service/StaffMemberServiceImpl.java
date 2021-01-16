@@ -1,5 +1,6 @@
 package com.egas.dealer.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import java.util.Map;
@@ -11,6 +12,8 @@ import org.springframework.util.StringUtils;
 
 import com.egas.dealer.entity.CustomerAccessoriesBooking;
 import com.egas.dealer.entity.CustomerGasBooking;
+import com.egas.dealer.entity.CustomerNewConnection;
+import com.egas.dealer.entity.Dealer;
 import com.egas.dealer.entity.Staff_Member;
 import com.egas.dealer.exception.InputException;
 import com.egas.dealer.exception.NotFoundException;
@@ -22,6 +25,7 @@ import com.egas.dealer.repository.StaffMemberRepository;
 @Service
 public class StaffMemberServiceImpl {
 	
+	static String pancardNumberLogin;
 	@Autowired
 	private CustomerGasBookingRepository custGasRepository;
 	
@@ -72,14 +76,51 @@ public class StaffMemberServiceImpl {
 		}
 	}
 	
-	public Staff_Member updateStaffMember(Map<String,String> updateData)
+	public String staffLogin(String pancard,String pass)
+	{
+		pancardNumberLogin = pancard;
+		String password = pass;
+		Staff_Member staffmember=staffRepository.findByPancardNumber(pancardNumberLogin);
+		Boolean staff_found= false;
+		if(staffmember==null)
+		{
+			throw new NotFoundException("Login Fail...If you are new user do register first");
+		}
+		if(pancardNumberLogin==null)
+		{
+			throw new InputException("Please Enter pancard number");
+		}
+		if(password==null)
+		{
+			throw new InputException("Please enter password");
+		}
+		if(staffmember.getStatus().equals("Pending"))
+		{
+			throw new NotFoundException("Your registration is not yet approved by Dealer :)");
+		}
+		List<Staff_Member> staff=(List<Staff_Member>) staffRepository.findAll();
+		for(Staff_Member s:staff)
+		{
+			if(s.getPancardNumber().equals(pancardNumberLogin) && s.getPassword().equals(password))
+			{
+				staff_found=true;
+				return pancardNumberLogin;
+			}
+		}
+		if(staff_found==false)
+		{
+			throw new NotFoundException("Login Fail...If you are new user do register first");
+		}
+		return pancardNumberLogin;
+	}
+	public Staff_Member updateStaffMember(Staff_Member updateData)
 	{
 		Staff_Member staffmember = new Staff_Member();
-		String pancardNumber=updateData.get("pancardNumber");
-		String updatedCity=updateData.get("city");
-		String updatedContact=updateData.get("contact");
-		String updatedEmail=updateData.get("email");
-		String updatedPassword=updateData.get("password");
+		String pancardNumber=updateData.getPancardNumber();
+		String updatedCity=updateData.getCity();
+		String updatedContact=updateData.getContact();
+		String updatedEmail=updateData.getEmail();
+		String updatedPassword=updateData.getPassword();
 		if(pancardNumber==null)
 		{
 			throw new InputException("Please Enter Pancard Number"); 
@@ -112,90 +153,99 @@ public class StaffMemberServiceImpl {
 		return staffmember;
 	}
 	
-	public boolean staffMemberLogin(String pancardNumber,String password)
-	{
-		Boolean staff_found= false;
-		List<Staff_Member> staffmembers=(List<Staff_Member>)staffRepository.findAll();
-		for(Staff_Member staff : staffmembers)
-		{
-			if((staff.getPancardNumber().equals(pancardNumber)) && (staff.getPassword().equals(password)))
-			{
-				staff_found=true;
-				break;
-			}
-		}
-		return staff_found;
-	}
-	
 	public List<CustomerGasBooking> getAllCustomerGasBooking()
 	{
-		List<CustomerGasBooking> gasBooking=(List<CustomerGasBooking>)custGasRepository.findAll();
-		return gasBooking;
+		Staff_Member staffmember=staffRepository.findByPancardNumber(pancardNumberLogin);
+		System.out.println(pancardNumberLogin);
+		String city=staffmember.getCity();
+		List<CustomerGasBooking> customerGas=(List<CustomerGasBooking>)custGasRepository.findByCustCity(city);
+		List<CustomerGasBooking> customer=new ArrayList<>();
+        for (CustomerGasBooking cust : customerGas) {
+
+			if((cust.getCustGasBookingStatus().equals("Approved")) && (cust.getCustGasDeliveryStatus().equals("Delivered")))
+			{
+			    customer.add(cust);
+			}	
+        }
+		return customer;
 	
 	}
 	
+	public List<CustomerGasBooking> getPendingGasBooking()
+	{
+		Staff_Member staffmember=staffRepository.findByPancardNumber(pancardNumberLogin);
+		System.out.println(pancardNumberLogin);
+		String city=staffmember.getCity();
+		List<CustomerGasBooking> customerGas=(List<CustomerGasBooking>)custGasRepository.findByCustCity(city);
+		List<CustomerGasBooking> customer=new ArrayList<>();
+        for (CustomerGasBooking cust : customerGas) {
+
+			if(cust.getCustGasDeliveryStatus().equals("Not Delivered") && cust.getCustGasBookingStatus().equals("Approved"))
+			{
+			    customer.add(cust);
+			}	
+        }
+		return customer;
+	}
 	
-	 public List<CustomerGasBooking> findByCustCity(String custCity) 
-	 {
-	   List<CustomerGasBooking> gasBook =custGasRepository.findByCustCity(custCity);
-	   return gasBook;
-	 }
 	 
 	 public List<CustomerAccessoriesBooking> getAllCustomerAccessoriesBooking()
 	 {
-		 List<CustomerAccessoriesBooking> accessoriesBooking=(List<CustomerAccessoriesBooking>)custAccessoriesRepository.findAll();
-		 return accessoriesBooking;
+		 Staff_Member staffmember=staffRepository.findByPancardNumber(pancardNumberLogin);
+			System.out.println(pancardNumberLogin);
+			String city=staffmember.getCity();
+			List<CustomerAccessoriesBooking> customerAccessories=(List<CustomerAccessoriesBooking>)custAccessoriesRepository.findByCustBookingCity(city);
+			List<CustomerAccessoriesBooking> customer=new ArrayList<>();
+	        for (CustomerAccessoriesBooking cust : customerAccessories) {
+
+				if((cust.getCustAccessoriesBookingStatus().equals("Approved")) && (cust.getCustAccessoriesDeliveryStatus().equals("Delivered")))
+				{
+				    customer.add(cust);
+				}	
+	        }
+			return customer;
+		 
 	 }
+	 public List<CustomerAccessoriesBooking> getPendingAccessoriesBooking()
+		{
+			Staff_Member staffmember=staffRepository.findByPancardNumber(pancardNumberLogin);
+			System.out.println(pancardNumberLogin);
+			String city=staffmember.getCity();
+			List<CustomerAccessoriesBooking> customerAccessories=(List<CustomerAccessoriesBooking>)custAccessoriesRepository.findByCustBookingCity(city);
+			List<CustomerAccessoriesBooking> customer=new ArrayList<>();
+	        for (CustomerAccessoriesBooking cust : customerAccessories) {
+
+				if(cust.getCustAccessoriesDeliveryStatus().equals("Not Delivered") && cust.getCustAccessoriesBookingStatus().equals("Approved"))
+				{
+				    customer.add(cust);
+				}	
+	        }
+			return customer;
+		}
 	 
-	 public List<CustomerAccessoriesBooking> findByCustBookingCity(String custBookingCity)
-	 {
-		 List<CustomerAccessoriesBooking> accessoriesBook=custAccessoriesRepository.findByCustBookingCity(custBookingCity);
-		 return accessoriesBook;
-	 }
 	 
 	 public CustomerGasBooking updateGasDeliveryStatus(Map<String,String> updateData)
 	 {
+		 String status=updateData.get("custGasDeliveryStatus");
 		 String pancardNumber=updateData.get("custPancard");
-		 String updatedStatus=updateData.get("custGasDeliveryStatus");
-		 CustomerGasBooking connect=new CustomerGasBooking();
-		 if(pancardNumber==null)
+		 CustomerGasBooking cust=custGasRepository.findByCustPancard(pancardNumber);
+		 if(cust != null)
 		 {
-			 throw new InputException("Please enter Pancard Number");
+			 cust.setCustGasDeliveryStatus(status);
+			 custGasRepository.save(cust);
 		 }
-		 CustomerGasBooking custGas=custGasRepository.findByCustPancard(pancardNumber);
-		 if(custGas==null)
-		 {
-			 throw new NotFoundException("Pancard Number Not Found...Please Enter Valid Pancard Number for updating data..");
-		 }
-		 else
-		 {
-			 custGas.setCustGasDeliveryStatus(updatedStatus);
-			 custGasRepository.save(custGas);
-			 connect=custGas;
-		 }
-		 return connect;
+		 return cust;
 	 }
 	 
 	 public CustomerAccessoriesBooking updateAccessoriesDeliveryStatus(Map<String,String> updateData)
 	 {
 		 String pancardNumber=updateData.get("custPancard");
 		 String status=updateData.get("custAccessoriesDeliveryStatus");
-		 CustomerAccessoriesBooking connect=new CustomerAccessoriesBooking();
-		 if(pancardNumber==null)
+		 CustomerAccessoriesBooking cust=custAccessoriesRepository.findByCustPancard(pancardNumber);
+		 if(cust != null)
 		 {
-			 throw new InputException("Please enter Pancard Number");
+			 cust.setCustAccessoriesDeliveryStatus(status);
 		 }
-		 CustomerAccessoriesBooking custAccessories=custAccessoriesRepository.findByCustPancard(pancardNumber);
-		 if(custAccessories==null)
-		 {
-			 throw new NotFoundException("Pancard Number Not Found...Please Enter Valid Pancard Number for updating data..");
-		 }
-		 else
-		 {
-			 custAccessories.setCustAccessoriesDeliveryStatus(status);
-			 custAccessoriesRepository.save(custAccessories);
-			 connect=custAccessories;
-		 }
-		 return connect;
+		 return cust;
 	 }
 }
