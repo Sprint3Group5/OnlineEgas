@@ -113,14 +113,14 @@ public class StaffMemberServiceImpl {
 		}
 		return pancardNumberLogin;
 	}
-	public Staff_Member updateStaffMember(Staff_Member updateData)
+	public Staff_Member updateStaffMember(Map<String,String> updateData)
 	{
 		Staff_Member staffmember = new Staff_Member();
-		String pancardNumber=updateData.getPancardNumber();
-		String updatedCity=updateData.getCity();
-		String updatedContact=updateData.getContact();
-		String updatedEmail=updateData.getEmail();
-		String updatedPassword=updateData.getPassword();
+		String pancardNumber=pancardNumberLogin;
+		String updatedCity=updateData.get("city");
+		String updatedContact=updateData.get("contact");
+		String updatedEmail=updateData.get("email");
+		String updatedPassword=updateData.get("password");
 		if(pancardNumber==null)
 		{
 			throw new InputException("Please Enter Pancard Number"); 
@@ -239,12 +239,13 @@ public class StaffMemberServiceImpl {
 	 
 	 public CustomerAccessoriesBooking updateAccessoriesDeliveryStatus(Map<String,String> updateData)
 	 {
-		 String pancardNumber=updateData.get("custPancard");
 		 String status=updateData.get("custAccessoriesDeliveryStatus");
+		 String pancardNumber=updateData.get("custPancard");
 		 CustomerAccessoriesBooking cust=custAccessoriesRepository.findByCustPancard(pancardNumber);
 		 if(cust != null)
 		 {
 			 cust.setCustAccessoriesDeliveryStatus(status);
+			 custAccessoriesRepository.save(cust);
 		 }
 		 return cust;
 	 }

@@ -2,6 +2,7 @@ package com.egas.dealer.Controller;
 
 import java.util.List;
 
+
 import java.util.Map;
 
 import javax.validation.Valid;
@@ -55,14 +56,17 @@ public class StaffMemberController {
     }
 	
 	@PatchMapping(value = "/updateStaffMember")
-	public Staff_Member updateStaffMember(@RequestBody Staff_Member updateData)
+	public ResponseEntity<String> updateStaffMember(@RequestBody Map<String,String> updateData)
 	{
+		if(pancardNumberLogin == null)
+		{
+			throw new NotFoundException("Dear StaffDelivery Please login first");
+		}
 		Staff_Member staff=staffMemberService.updateStaffMember(updateData);
-		return staff;
+		return new ResponseEntity<String>("Updated Successfully :)",HttpStatus.OK);
 	}
 	
-	@Autowired
-	private StaffMemberRepository staffRepository;
+	
 	
 	@GetMapping(value="/stafflogin/{pancard}/{pass}")
 	public ResponseEntity<String> staffLogin(@PathVariable String pancard, @PathVariable String pass)
@@ -136,13 +140,13 @@ public class StaffMemberController {
 		} 
 	 
 	 
-	 @PatchMapping(value= "updateAccessoriesDeliveryStatus")
-	 public ResponseEntity<String> updateAccessDeliveryStatusBasedOnId(@RequestBody Map<String,String> updateStatus)
+	 @PatchMapping(value= "/updateAccessoriesDeliveryStatus")
+	 public ResponseEntity<String> updateAccessDeliveryStatus(@RequestBody Map<String,String> updateData)
 	 {
-		 CustomerAccessoriesBooking customerAccessories=staffMemberService.updateAccessoriesDeliveryStatus(updateStatus);
-		 if(customerAccessories != null) {
-			 String status=updateStatus.get("custAccessoriesDeliveryStatus");
-			 Integer custId=customerAccessories.getCustomerId();
+		 CustomerAccessoriesBooking custAccessories=staffMemberService.updateAccessoriesDeliveryStatus(updateData);
+		 if(custAccessories != null) {
+			 String status=updateData.get("custAccessoriesDeliveryStatus");
+			 Integer custId=custAccessories.getCustomerId();
 			 return new ResponseEntity<String>("Customer Status with Id: " + custId + " updated to status: " + status + " Successfully ",HttpStatus.OK);
 		 }else {
 			 throw new NotFoundException("Pancard Number not found:(");
