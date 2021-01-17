@@ -47,8 +47,8 @@ public Admin create(@RequestBody Admin admin)
 
 
 
-@PatchMapping (value="/login")
-public ResponseEntity<String> adminLogin(@Valid @RequestBody Map<String,String> loginData)
+@PostMapping (value="/login")
+public ResponseEntity<String> adminLogin(@RequestBody Map<String,String> loginData)
 {
 String result=adminService.adminLogin(loginData);
 return new ResponseEntity<String>(""+result,HttpStatus.OK);

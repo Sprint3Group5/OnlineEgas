@@ -213,7 +213,9 @@ public class IDealerServiceImpl  implements IDealerService{
 	
 	public List<CustomerGasBooking> getAllCustomerBookings()
 	{
-		List<CustomerGasBooking> custBooking=(List<CustomerGasBooking>) custGasRepository.findAll();
+		Dealer dealer=dealerRepository.findByPancardNumber(pancardNumberLogin);
+		String city=dealer.getCity();
+		List<CustomerGasBooking> custBooking=(List<CustomerGasBooking>) custGasRepository.findByCustCity(city);
 		List<CustomerGasBooking> approvedGasBookings=new ArrayList<>();
 		for (CustomerGasBooking temp : custBooking) {
 
@@ -238,8 +240,9 @@ public class IDealerServiceImpl  implements IDealerService{
 	}
 	public List<CustomerGasBooking> getPendingGasBookings()
 	{
-        List<CustomerGasBooking> custBooking=(List<CustomerGasBooking>) custGasRepository.findAll();
-		
+		Dealer dealer=dealerRepository.findByPancardNumber(pancardNumberLogin);
+		String city=dealer.getCity();
+        List<CustomerGasBooking> custBooking=(List<CustomerGasBooking>) custGasRepository.findByCustCity(city);
 		List<CustomerGasBooking> pendingGasBookings=new ArrayList<>();
 		for (CustomerGasBooking temp : custBooking) {
 
@@ -256,7 +259,9 @@ public class IDealerServiceImpl  implements IDealerService{
 	
 	public List<CustomerAccessoriesBooking> getAllCustomerAccessories()
 	{
-		List<CustomerAccessoriesBooking> custAccessories=(List<CustomerAccessoriesBooking>) custAccRepository.findAll();
+		Dealer dealer=dealerRepository.findByPancardNumber(pancardNumberLogin);
+		String city=dealer.getCity();
+		List<CustomerAccessoriesBooking> custAccessories=(List<CustomerAccessoriesBooking>) custAccRepository.findByCustBookingCity(city);
 		List<CustomerAccessoriesBooking> approvedAccessoriesBookings=new ArrayList<>();
 		for (CustomerAccessoriesBooking temp : custAccessories) {
 
@@ -283,7 +288,9 @@ public class IDealerServiceImpl  implements IDealerService{
 	
 	public List<CustomerAccessoriesBooking> getPendingAccessoriesBookings()
 	{
-        List<CustomerAccessoriesBooking> custBooking=(List<CustomerAccessoriesBooking>) custAccRepository.findAll();
+		Dealer dealer=dealerRepository.findByPancardNumber(pancardNumberLogin);
+		String city=dealer.getCity();
+        List<CustomerAccessoriesBooking> custBooking=(List<CustomerAccessoriesBooking>) custAccRepository.findByCustBookingCity(city);
 		
 		List<CustomerAccessoriesBooking> pendingAccessoriesBookings=new ArrayList<>();
 		for (CustomerAccessoriesBooking temp : custBooking) {
