@@ -13,10 +13,11 @@ import com.egas.dealer.entity.CustomerNewConnection;
 public interface ICustomerService {
 	
 	public void addCustomer(Customer customer);
-	public void newConnection(CustomerNewConnection customerNewConnection);
+	public CustomerNewConnection newConnection(CustomerNewConnection customerNewConnection);
 	public CustomerGasBooking gasBooking(CustomerGasBooking customerGasBooking);
 	public CustomerAccessoriesBooking accessoriesBooking(CustomerAccessoriesBooking customerAccessoriesBooking);
-	public void customerLogin(Map<String,String> loginData);
+	public String customerLogin(String pancardNumber,String password);
 	public Customer updateCustomer(Map<String,String> updateData);
 	public void addCustomerNewConnection(Customer customer);
+	public String getCustomerName(String pancardnumber);
 }

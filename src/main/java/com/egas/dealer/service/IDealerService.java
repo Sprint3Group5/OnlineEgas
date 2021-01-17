@@ -16,12 +16,13 @@ public interface IDealerService {
 	public Dealer updateDealer(Map<String,String> updateFname);
 	public List<CustomerNewConnection> getAllCustomerConnections();
 	public CustomerNewConnection saveConnectionStatus(Map<String,String> data);
-	public String dealerLogin(Map<String,String> loginData);
+	public String dealerLogin(String pancard,String pass);
 	public List<CustomerGasBooking> getAllCustomerBookings();
 	public CustomerGasBooking saveGasBookingStatus(Map<String,String> updateStatus);
 	public List<CustomerAccessoriesBooking> getAllCustomerAccessories();
 	public CustomerAccessoriesBooking saveAccessoriesStatus(Map<String,String> updateStatus);
 	public List<Staff_Member> getAllDeliveryStaff();
 	public Staff_Member saveStaffStatus(Map<String,String> updateStatus);
+	
 	
 }

@@ -27,6 +27,7 @@ import com.egas.dealer.repository.StaffMemberRepository;
 @Service
 public class IDealerServiceImpl  implements IDealerService{
 
+
 	static String pancardNumberLogin;
 	@Autowired
 	DealerRepository dealerRepository;
@@ -50,7 +51,7 @@ public class IDealerServiceImpl  implements IDealerService{
 	public Dealer updateDealer(Map<String,String> updateData)
 	{
 		Dealer dealer=new Dealer();
-		String pancardNumber=updateData.get("pancardNumber");
+		String pancardNumber=pancardNumberLogin;
 		String updatedFname=updateData.get("firstName");
 		String updatedLname=updateData.get("lastName");
 		String updatedEmail=updateData.get("email");
@@ -116,11 +117,11 @@ public class IDealerServiceImpl  implements IDealerService{
 		return dealer;
 	}
 	
-	public String dealerLogin(Map<String,String> loginData) 
+	public String dealerLogin(String pancard,String pass) 
 	{
 		
-		pancardNumberLogin=loginData.get("pancardNumber");
-		String password = loginData.get("password");
+		pancardNumberLogin=pancard;
+		String password = pass;
 		Dealer dealer1=dealerRepository.findByPancardNumber(pancardNumberLogin);
 		//System.out.println(dealer1);
 		Boolean dealer_found = false;
@@ -155,6 +156,7 @@ public class IDealerServiceImpl  implements IDealerService{
 
         }
         return pancardNumberLogin;
+
 
 	}
 	
@@ -212,7 +214,15 @@ public class IDealerServiceImpl  implements IDealerService{
 	public List<CustomerGasBooking> getAllCustomerBookings()
 	{
 		List<CustomerGasBooking> custBooking=(List<CustomerGasBooking>) custGasRepository.findAll();
-		return custBooking;
+		List<CustomerGasBooking> approvedGasBookings=new ArrayList<>();
+		for (CustomerGasBooking temp : custBooking) {
+
+			if(!temp.getCustGasBookingStatus().equals("Pending"))
+			{
+				approvedGasBookings.add(temp);
+			}	
+        }
+		return approvedGasBookings;
 	}
 	public CustomerGasBooking saveGasBookingStatus(Map<String,String> updateStatus)
 	{
@@ -226,6 +236,20 @@ public class IDealerServiceImpl  implements IDealerService{
 		return 	accessories;
 	
 	}
+	public List<CustomerGasBooking> getPendingGasBookings()
+	{
+        List<CustomerGasBooking> custBooking=(List<CustomerGasBooking>) custGasRepository.findAll();
+		
+		List<CustomerGasBooking> pendingGasBookings=new ArrayList<>();
+		for (CustomerGasBooking temp : custBooking) {
+
+			if(temp.getCustGasBookingStatus().equals("Pending"))
+			{
+				pendingGasBookings.add(temp);
+			}	
+        }
+		return pendingGasBookings;
+	}
 	
 	
 	//*********Customer Accessories Methods************
@@ -233,7 +257,15 @@ public class IDealerServiceImpl  implements IDealerService{
 	public List<CustomerAccessoriesBooking> getAllCustomerAccessories()
 	{
 		List<CustomerAccessoriesBooking> custAccessories=(List<CustomerAccessoriesBooking>) custAccRepository.findAll();
-		return custAccessories;
+		List<CustomerAccessoriesBooking> approvedAccessoriesBookings=new ArrayList<>();
+		for (CustomerAccessoriesBooking temp : custAccessories) {
+
+			if(!temp.getCustAccessoriesBookingStatus().equals("Pending"))
+			{
+				approvedAccessoriesBookings.add(temp);
+			}	
+        }
+		return approvedAccessoriesBookings;
 	}
 	
 	public CustomerAccessoriesBooking saveAccessoriesStatus(Map<String,String> updateStatus)
@@ -248,13 +280,36 @@ public class IDealerServiceImpl  implements IDealerService{
 		return 	accessories;
 	
 	}
+	
+	public List<CustomerAccessoriesBooking> getPendingAccessoriesBookings()
+	{
+        List<CustomerAccessoriesBooking> custBooking=(List<CustomerAccessoriesBooking>) custAccRepository.findAll();
+		
+		List<CustomerAccessoriesBooking> pendingAccessoriesBookings=new ArrayList<>();
+		for (CustomerAccessoriesBooking temp : custBooking) {
 
-	//**********Delivery Staff Methods***********
+			if(temp.getCustAccessoriesBookingStatus().equals("Pending"))
+			{
+				pendingAccessoriesBookings.add(temp);
+			}	
+        }
+		return pendingAccessoriesBookings;
+	}
+
+	//************Delivery Staff Methods*************
     
     public List<Staff_Member> getAllDeliveryStaff()
 	{
 		List<Staff_Member> deliveryStaff=(List<Staff_Member>) DeliveryStaffRepository.findAll();
-		return deliveryStaff;
+		List<Staff_Member> approvedstaff=new ArrayList<>();
+		for (Staff_Member temp : deliveryStaff) {
+
+			if(!temp.getStatus().equals("Pending"))
+			{
+				approvedstaff.add(temp);
+			}	
+        }
+		return approvedstaff;
 	}
 	public Staff_Member saveStaffStatus(Map<String,String> updateStatus)
 	{
@@ -268,7 +323,19 @@ public class IDealerServiceImpl  implements IDealerService{
 		return 	staff;
 	
 	}
+	public List<Staff_Member> getPendingStaff()
+	{
+        List<Staff_Member> staff=(List<Staff_Member>) DeliveryStaffRepository.findAll();
+		
+		List<Staff_Member> pendingstaff=new ArrayList<>();
+		for (Staff_Member temp : staff) {
 
-	
+			if(temp.getStatus().equals("Pending"))
+			{
+				pendingstaff.add(temp);
+			}	
+        }
+		return pendingstaff;
+	}
 
 }

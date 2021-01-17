@@ -24,6 +24,7 @@ import com.egas.dealer.repository.CustomerRepository;
 @Service 
 public class ICustomerServiceImpl  implements ICustomerService{
 
+	static String pancardNumberLogin;
 	@Autowired
 	CustomerRepository customerRepository;
 	
@@ -56,14 +57,9 @@ public class ICustomerServiceImpl  implements ICustomerService{
 		
 	}
 	
-	public void newConnection(CustomerNewConnection customerNewConnection)
+	public CustomerNewConnection newConnection(CustomerNewConnection customerNewConnection)
 	{
-		try {
-		custNewRepository.save(customerNewConnection);
-		}
-		catch(Exception e) {
-			throw new InputException("Please fill all the details....");
-		}
+		return custNewRepository.save(customerNewConnection);
 		
 	}
 	
@@ -77,91 +73,96 @@ public class ICustomerServiceImpl  implements ICustomerService{
 		return custAccessoriesRepository.save(customerAccessoriesBooking);
 	}
 	
-	public void customerLogin(Map<String,String> loginData)
+	public String customerLogin(String pancard,String pass)
 	{
-		String pancardNumber=loginData.get("pancardNumber");
-		String password=loginData.get("password");
+		pancardNumberLogin = pancard;
+		String password = pass;
+		Customer customer=customerRepository.findByPancardNumber(pancardNumberLogin);
 		Boolean cust_found= false;
-		if(pancardNumber==null || password==null)
-		 {
-			 throw new InputException("Please enter Pancard Number and Password");
-		 }
-		else {
-		List<Customer> customers=(List<Customer>)customerRepository.findAll();
-			for(Customer cust : customers)
+		if(customer==null)
+		{
+			throw new NotFoundException("Login Fail...If you are new user do register first");
+		}
+		if(pancardNumberLogin==null)
+		{
+			throw new InputException("Please Enter pancard number");
+		}
+		if(password==null)
+		{
+			throw new InputException("Please enter password");
+		}
+		List<Customer> cust=(List<Customer>) customerRepository.findAll();
+		for(Customer s:cust)
+		{
+			if(s.getPancardNumber().equals(pancardNumberLogin) && s.getPassword().equals(password))
 			{
-				if((cust.getPancardNumber().equals(pancardNumber)) && (cust.getPassword().equals(password)))
-				{
-					cust_found=true;
-					break;
-				}
-			}
-			if(cust_found==false)
-			{
-				throw new NotFoundException(".....LOGIN FAILED.....If you are new customer do register first..");
+				cust_found=true;
+				return pancardNumberLogin;
 			}
 		}
+		if(cust_found==false)
+		{
+			throw new NotFoundException("Login Fail...If you are new user do register first");
+		}
+		return pancardNumberLogin;
+	}
+	
+	public String getCustomerName(String pancardnumber)
+	{
+		String customerName="";
+		List<Customer> cust=(List<Customer>) customerRepository.findAll();
+		for(Customer s:cust)
+		{
+			if(s.getPancardNumber().equals(pancardnumber))
+			{
+				customerName=s.getFname()+' '+s.getLname();
+			}
+		}
+		return customerName;
 	}
 	
 	
 	public Customer updateCustomer(Map<String,String> updateData)
 	{
-		Customer customer=new Customer();
-		String pancardNumber=updateData.get("pancardNumber");
-		String updatedFname=updateData.get("firstName");
-		String updatedLname=updateData.get("lastName");
-		String updatedEmail=updateData.get("email");
+		Customer customer = new Customer();
+		String pancardNumber=pancardNumberLogin;
+		String updatedFname=updateData.get("fname");
+		String updatedLname=updateData.get("lname");
 		String updatedContact=updateData.get("contactNumber");
+		String updatedEmail=updateData.get("email");
 		String updatedPassword=updateData.get("password");
-		String updatedConfirmPassword=updateData.get("confirmPassword");
 		if(pancardNumber==null)
 		{
-			throw new InputException("Please Enter Pancard Number");
+			throw new InputException("Please Enter Pancard Number"); 
 		}
-		
 		try
 		{
-		customer=customerRepository.findByPancardNumber(pancardNumber);
-		
-		if(!StringUtils.isEmpty(updatedFname))
-		{
-			customer.setFname(updatedFname);
-		}
-		if(!StringUtils.isEmpty(updatedLname))
-		{
-			customer.setLname(updatedLname);
-		}
-		if(!StringUtils.isEmpty(updatedEmail))
-		{
-			customer.setEmail(updatedEmail);
-		}
-		if(!StringUtils.isEmpty(updatedContact))
-		{
-			customer.setContactNumber(updatedContact);
-		}
-		if(!StringUtils.isEmpty(updatedPassword) && !StringUtils.isEmpty(updatedConfirmPassword))
-		{
-			if(!(updatedPassword.equals(updatedConfirmPassword)))
+			customer=customerRepository.findByPancardNumber(pancardNumber);
+			if(!StringUtils.isEmpty(updatedFname))
 			{
-				throw new InputException("Password and Confirm Password not Matching");
+				customer.setFname(updatedFname);
 			}
-			customer.setPassword(updatedPassword);
-			customer.setConfirmPassword(updatedConfirmPassword);
+			if(!StringUtils.isEmpty(updatedLname))
+			{
+				customer.setLname(updatedLname);
+			}
+			if(!StringUtils.isEmpty(updatedContact))
+			{
+				customer.setContactNumber(updatedContact);
+			}
+			if(!StringUtils.isEmpty(updatedEmail))
+			{
+				customer.setEmail(updatedEmail);
+			}
+			if(!StringUtils.isEmpty(updatedPassword))
+			{
+				customer.setPassword(updatedPassword);
+			}
+			customerRepository.save(customer);
 		}
-		else if(!StringUtils.isEmpty(updatedPassword) && StringUtils.isEmpty(updatedConfirmPassword))
+		catch(Exception ex)
 		{
-			throw new InputException("Please Provide Confirm Password...");
-		}
-		else if(StringUtils.isEmpty(updatedPassword) && !StringUtils.isEmpty(updatedConfirmPassword))
-		{
-			throw new InputException("Please Provide Password...");
-		}
-		
-		customerRepository.save(customer);
-	    }
-		catch(NotFoundException e)
-		{
-			throw new NotFoundException("Pancard Number not Found :( ... Please Enter Valid Pancard Number!");
+			throw new NotFoundException("Pancard Number not Found.....Please Enter valid Pancard Number.....");
 		}
 		return customer;	
 	}
@@ -171,7 +172,6 @@ public class ICustomerServiceImpl  implements ICustomerService{
 		// TODO Auto-generated method stub
 		
 	}
-	
 	
 	
 	
