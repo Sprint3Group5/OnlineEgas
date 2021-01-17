@@ -21,8 +21,6 @@ import com.egas.dealer.repository.CustomerRepository;
 import com.egas.dealer.repository.DealerRepository;
 import com.egas.dealer.repository.StaffMemberRepository;
 
-
-
 @Service
 public class AdminService{
 	
@@ -125,4 +123,17 @@ private	CustomerRepository customerRepository;
 		        }).orElseThrow();   
 	 
 	}
+	
+	public Dealer updatedealerStatus(Map<String,String> updateData) {
+   
+		String status=updateData.get("dealerStatus");
+		String pancardNumber=updateData.get("pancardNumber");
+		Dealer dealer=dealerRepository.findByPancardNumber(pancardNumber);
+		if(dealer != null) {
+			dealer.setDealerStatus(status);
+			dealerRepository.save(dealer);
+		}
+		return dealer;
+		
+}
 }

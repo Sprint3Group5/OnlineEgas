@@ -30,7 +30,7 @@ import com.egas.dealer.exception.InputException;
 import com.egas.dealer.exception.NotFoundException;
 import com.egas.dealer.service.IDealerServiceImpl;
 
-@CrossOrigin(origins="http://localhost:3000")
+@CrossOrigin
 @RestController
 @RequestMapping(value = "/dealers")
 public class DealerController {
